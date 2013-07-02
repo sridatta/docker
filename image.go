@@ -163,7 +163,7 @@ func MountAUFS(ro []string, rw string, target string) error {
 
 // TarLayer returns a tar archive of the image's filesystem layer.
 func (image *Image) TarLayer(compression Compression) (Archive, error) {
-	layerPath, err := image.layer()
+	layerPath, err := image.Layer()
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +176,7 @@ func (image *Image) Mount(root, rw string) error {
 	} else if mounted {
 		return fmt.Errorf("%s is already mounted", root)
 	}
-	layers, err := image.layers()
+	layers, err := image.Layers()
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func (image *Image) Mount(root, rw string) error {
 }
 
 func (image *Image) Changes(rw string) ([]Change, error) {
-	layers, err := image.layers()
+	layers, err := image.Layers()
 	if err != nil {
 		return nil, err
 	}
@@ -243,12 +243,12 @@ func (img *Image) History() ([]*Image, error) {
 // layers returns all the filesystem layers needed to mount an image
 // FIXME: @shykes refactor this function with the new error handling
 //        (I'll do it if I have time tonight, I focus on the rest)
-func (img *Image) layers() ([]string, error) {
+func (img *Image) Layers() ([]string, error) {
 	var list []string
 	var e error
 	if err := img.WalkHistory(
 		func(img *Image) (err error) {
-			if layer, err := img.layer(); err != nil {
+			if layer, err := img.Layer(); err != nil {
 				e = err
 			} else if layer != "" {
 				list = append(list, layer)
@@ -274,29 +274,40 @@ func (img *Image) layers() ([]string, error) {
 }
 
 func (img *Image) WalkHistory(handler func(*Image) error) (err error) {
-	currentImg := img
-	for currentImg != nil {
+	frontier := []*Image{img}
+	var currentImg *Image
+	for len(frontier) != 0 {
 		if handler != nil {
+			currentImg, frontier = frontier[0], frontier[1:]
 			if err := handler(currentImg); err != nil {
 				return err
 			}
 		}
-		currentImg, err = currentImg.GetParent()
+		parents, err := currentImg.GetParents()
 		if err != nil {
 			return fmt.Errorf("Error while getting parent image: %v", err)
 		}
+		frontier = append(frontier, parents...)
 	}
 	return nil
 }
 
-func (img *Image) GetParent() (*Image, error) {
-	if img.Parent == "" {
+func (img *Image) GetParents() ([]*Image, error) {
+	if len(img.Parents) == 0 {
 		return nil, nil
 	}
 	if img.graph == nil {
 		return nil, fmt.Errorf("Can't lookup parent of unregistered image")
 	}
-	return img.graph.Get(img.Parent)
+	images := []*Image{}
+	for _, imageName := range img.Parents {
+		image, err := img.graph.Get(imageName)
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, image)
+	}
+	return images, nil
 }
 
 func (img *Image) getDockerInitLayer() (string, error) {
@@ -314,7 +325,7 @@ func (img *Image) root() (string, error) {
 }
 
 // Return the path of an image's layer
-func (img *Image) layer() (string, error) {
+func (img *Image) Layer() (string, error) {
 	root, err := img.root()
 	if err != nil {
 		return "", err
@@ -323,12 +334,15 @@ func (img *Image) layer() (string, error) {
 }
 
 func (img *Image) getParentsSize(size int64) int64 {
-	parentImage, err := img.GetParent()
-	if err != nil || parentImage == nil {
+	parentImages, err := img.GetParents()
+	if err != nil || len(parentImages) == 0 {
 		return size
 	}
-	size += parentImage.Size
-	return parentImage.getParentsSize(size)
+	for _, parentImage := range parentImages {
+		size += parentImage.Size
+		size += parentImage.getParentsSize(size)
+	}
+	return size
 }
 
 // Build an Image object from raw json data
