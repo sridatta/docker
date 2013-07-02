@@ -1004,13 +1004,46 @@ func (container *Container) EnsureMounted() error {
 }
 
 func (container *Container) Mount() error {
-	image, err := container.GetImage()
+	if mounted, err := container.Mounted(); err != nil {
+		return err
+	} else if mounted {
+		return fmt.Errorf("%s is already mounted", container.RootfsPath())
+	}
+
+	// Create the target directories if they don't exist
+	if err := os.Mkdir(container.RootfsPath(), 0755); err != nil && !os.IsExist(err) {
+		return err
+	}
+	if err := os.Mkdir(container.rwPath(), 0755); err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	images, err := container.GetImages()
 	if err != nil {
 		return err
 	}
-	return image.Mount(container.RootfsPath(), container.rwPath())
+
+	layerSet := utils.NewStringSet()
+	for _, image := range images {
+		imageLayers, err := image.Layers()
+		if err != nil {
+			return err
+		}
+		log.Printf("Layers are %v\n", imageLayers)
+		for _, layer := range imageLayers {
+			layerSet.Add(layer)
+		}
+	}
+
+	log.Printf("Layerset elements are %v\n", layerSet.GetElements())
+	if err := MountAUFS(layerSet.GetElements(), container.rwPath(), container.RootfsPath()); err != nil {
+		return err
+	}
+	return nil
 }
 
+// TODO @sridatta: should return the union of multiple changesets.
+// Might be tricky
 func (container *Container) Changes() ([]Change, error) {
 	image, err := container.GetImage()
 	if err != nil {
