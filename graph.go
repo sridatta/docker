@@ -105,7 +105,7 @@ func (graph *Graph) Create(layerData Archive, container *Container, comment, aut
 		Architecture:  "x86_64",
 	}
 	if container != nil {
-		img.Parent = container.Image
+		img.Parents = append(img.Parents, container.Images...)
 		img.Container = container.ID
 		img.ContainerConfig = *container.Config
 	}
@@ -318,14 +318,16 @@ func (graph *Graph) WalkAll(handler func(*Image)) error {
 func (graph *Graph) ByParent() (map[string][]*Image, error) {
 	byParent := make(map[string][]*Image)
 	err := graph.WalkAll(func(image *Image) {
-		parent, err := graph.Get(image.Parent)
-		if err != nil {
-			return
-		}
-		if children, exists := byParent[parent.ID]; exists {
-			byParent[parent.ID] = []*Image{image}
-		} else {
-			byParent[parent.ID] = append(children, image)
+		for _, parentName := range image.Parents {
+			parent, err := graph.Get(parentName)
+			if err != nil {
+				return
+			}
+			if children, exists := byParent[parent.ID]; exists {
+				byParent[parent.ID] = []*Image{image}
+			} else {
+				byParent[parent.ID] = append(children, image)
+			}
 		}
 	})
 	return byParent, err

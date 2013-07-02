@@ -29,13 +29,16 @@ func NewBuilder(runtime *Runtime) *Builder {
 
 func (builder *Builder) Create(config *Config) (*Container, error) {
 	// Lookup image
-	img, err := builder.repositories.LookupImage(config.Image)
-	if err != nil {
-		return nil, err
-	}
-
-	if img.Config != nil {
-		MergeConfig(config, img.Config)
+	images := []string{}
+	for _, imageName := range config.Images {
+		img, err := builder.repositories.LookupImage(imageName)
+		if err != nil {
+			return nil, err
+		}
+		if img.Config != nil {
+			MergeConfig(config, img.Config)
+		}
+		images = append(images, img.ID)
 	}
 
 	if len(config.Entrypoint) != 0 && config.Cmd == nil {

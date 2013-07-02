@@ -621,7 +621,7 @@ func (container *Container) Start(hostConfig *HostConfig) error {
 			if err != nil {
 				return err
 			}
-			srcPath, err := c.layer()
+			srcPath, err := c.Layer()
 			if err != nil {
 				return err
 			}

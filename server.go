@@ -165,16 +165,19 @@ func (srv *Server) ImagesViz(out io.Writer) error {
 	out.Write([]byte("digraph docker {\n"))
 
 	var (
-		parentImage *Image
-		err         error
+		parentImage  *Image
+		parentImages []*Image
+		err          error
 	)
 	for _, image := range images {
-		parentImage, err = image.GetParent()
+		parentImages, err = image.GetParents()
 		if err != nil {
 			return fmt.Errorf("Error while getting parent image: %v", err)
 		}
-		if parentImage != nil {
-			out.Write([]byte(" \"" + parentImage.ShortID() + "\" -> \"" + image.ShortID() + "\"\n"))
+		if len(parentImages) != 0 {
+			for _, parentImage = range parentImages {
+				out.Write([]byte(" \"" + parentImage.ShortID() + "\" -> \"" + image.ShortID() + "\"\n"))
+			}
 		} else {
 			out.Write([]byte(" base -> \"" + image.ShortID() + "\" [style=invis]\n"))
 		}
@@ -380,7 +383,13 @@ func (srv *Server) Containers(all, size bool, n int, since, before string) []API
 		c := APIContainers{
 			ID: container.ID,
 		}
-		c.Image = srv.runtime.repositories.ImageName(container.Image)
+
+		images := []string{}
+		for _, image := range container.Images {
+			images = append(images, srv.runtime.repositories.ImageName(image))
+		}
+
+		c.Images = images
 		c.Command = fmt.Sprintf("%s %s", container.Path, strings.Join(container.Args, " "))
 		c.Created = container.Created.Unix()
 		c.Status = container.State.String()
@@ -828,7 +837,7 @@ func (srv *Server) ContainerCreate(config *Config) (string, error) {
 	container, err := b.Create(config)
 	if err != nil {
 		if srv.runtime.graph.IsNotExist(err) {
-			return "", fmt.Errorf("No such image: %s", config.Image)
+			return "", fmt.Errorf("No such image: %v", config.Images)
 		}
 		return "", err
 	}
@@ -935,16 +944,19 @@ func (srv *Server) deleteImageAndChildren(id string, imgs *[]APIRmi) error {
 }
 
 func (srv *Server) deleteImageParents(img *Image, imgs *[]APIRmi) error {
-	if img.Parent != "" {
-		parent, err := srv.runtime.graph.Get(img.Parent)
-		if err != nil {
-			return err
+	var parentName string
+	if len(img.Parents) != 0 {
+		for _, parentName = range img.Parents {
+			parent, err := srv.runtime.graph.Get(parentName)
+			if err != nil {
+				return err
+			}
+			// Remove all children images
+			if err := srv.deleteImageAndChildren(parentName, imgs); err != nil {
+				return err
+			}
+			return srv.deleteImageParents(parent, imgs)
 		}
-		// Remove all children images
-		if err := srv.deleteImageAndChildren(img.Parent, imgs); err != nil {
-			return err
-		}
-		return srv.deleteImageParents(parent, imgs)
 	}
 	return nil
 }
@@ -1017,11 +1029,14 @@ func (srv *Server) ImageGetCached(imgID string, config *Config) (*Image, error) 
 
 	// Store the tree in a map of map (map[parentId][childId])
 	imageMap := make(map[string]map[string]struct{})
+	var parent string
 	for _, img := range images {
-		if _, exists := imageMap[img.Parent]; !exists {
-			imageMap[img.Parent] = make(map[string]struct{})
+		for _, parent = range img.Parents {
+			if _, exists := imageMap[parent]; !exists {
+				imageMap[parent] = make(map[string]struct{})
+			}
+			imageMap[parent][img.ID] = struct{}{}
 		}
-		imageMap[img.Parent][img.ID] = struct{}{}
 	}
 
 	// Loop on the children of the given image and check the config
