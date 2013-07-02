@@ -1381,7 +1381,7 @@ func (cli *DockerCli) CmdRun(args ...string) error {
 	if err != nil {
 		return err
 	}
-	if config.Image == "" {
+	if len(config.Images) == 0 {
 		cmd.Usage()
 		return nil
 	}

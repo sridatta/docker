@@ -93,7 +93,7 @@ type BindMap struct {
 }
 
 func ParseRun(args []string, capabilities *Capabilities) (*Config, *HostConfig, *flag.FlagSet, error) {
-	cmd := Subcmd("run", "[OPTIONS] IMAGE [COMMAND] [ARG...]", "Run a command in a new container")
+	cmd := Subcmd("run", "[OPTIONS] IMAGES [COMMAND] [ARG...]", "Run a command in a new container")
 	if len(args) > 0 && args[0] != "--help" {
 		cmd.SetOutput(ioutil.Discard)
 		cmd.Usage = nil
@@ -166,9 +166,9 @@ func ParseRun(args []string, capabilities *Capabilities) (*Config, *HostConfig, 
 	parsedArgs := cmd.Args()
 	runCmd := []string{}
 	entrypoint := []string{}
-	image := ""
+	images := []string{}
 	if len(parsedArgs) >= 1 {
-		image = cmd.Arg(0)
+		images = strings.Split(cmd.Arg(0), ",")
 	}
 	if len(parsedArgs) > 1 {
 		runCmd = parsedArgs[1:]
