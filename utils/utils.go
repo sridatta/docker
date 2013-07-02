@@ -864,3 +864,25 @@ func UserLookup(uid string) (*user.User, error) {
 	}
 	return nil, fmt.Errorf("User not found in /etc/passwd")
 }
+
+type StringSet struct {
+  set map[string]bool
+  elements []string
+}
+
+func NewStringSet() *StringSet {
+  return &StringSet{set: make(map[string]bool), elements: []string{}}
+}
+
+func (set *StringSet) GetElements() []string {
+  return set.elements
+}
+
+func (set *StringSet) Add(str string) bool {
+  _,existed := set.set[str]
+  if !existed {
+    set.elements = append(set.elements, str)
+    set.set[str] = true
+  }
+  return !existed
+}
