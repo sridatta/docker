@@ -1020,10 +1020,29 @@ func (container *Container) Changes() ([]Change, error) {
 }
 
 func (container *Container) GetImage() (*Image, error) {
+	images, err := container.GetImages()
+	if err != nil {
+		return nil, err
+	}
+	return images[0], nil
+}
+
+func (container *Container) GetImages() ([]*Image, error) {
 	if container.runtime == nil {
 		return nil, fmt.Errorf("Can't get image of unregistered container")
 	}
-	return container.runtime.graph.Get(container.Image)
+	images := []*Image{}
+	for _, imageName := range container.Images {
+		image, err := container.runtime.graph.Get(imageName)
+		if err != nil {
+			return nil, err
+		}
+		if image == nil {
+			return nil, fmt.Errorf("Could not get image")
+		}
+		images = append(images, image)
+	}
+	return images, nil
 }
 
 func (container *Container) Mounted() (bool, error) {
