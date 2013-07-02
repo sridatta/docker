@@ -20,7 +20,7 @@ import (
 
 type Image struct {
 	ID              string    `json:"id"`
-	Parent          string    `json:"parent,omitempty"`
+	Parents         []string  `json:"parents,omitempty"`
 	Comment         string    `json:"comment,omitempty"`
 	Created         time.Time `json:"created"`
 	Container       string    `json:"container,omitempty"`

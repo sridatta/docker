@@ -33,7 +33,7 @@ type Container struct {
 
 	Config *Config
 	State  State
-	Image  string
+	Images []string
 
 	network         *NetworkInterface
 	NetworkSettings *NetworkSettings
@@ -73,7 +73,7 @@ type Config struct {
 	Env             []string
 	Cmd             []string
 	Dns             []string
-	Image           string // Name of the image as it was passed by the operator (eg. could be symbolic)
+	Images          []string // Name of the image as it was passed by the operator (eg. could be symbolic)
 	Volumes         map[string]struct{}
 	VolumesFrom     string
 	Entrypoint      []string
@@ -192,7 +192,7 @@ func ParseRun(args []string, capabilities *Capabilities) (*Config, *HostConfig, 
 		Env:             flEnv,
 		Cmd:             runCmd,
 		Dns:             flDns,
-		Image:           image,
+		Images:          images,
 		Volumes:         flVolumes,
 		VolumesFrom:     *flVolumesFrom,
 		Entrypoint:      entrypoint,

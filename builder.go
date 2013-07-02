@@ -70,7 +70,7 @@ func (builder *Builder) Create(config *Config) (*Container, error) {
 		Path:            entrypoint,
 		Args:            args, //FIXME: de-duplicate from config
 		Config:          config,
-		Image:           img.ID, // Always use the resolved image id
+		Images:          images, // Always use the resolved image id
 		NetworkSettings: &NetworkSettings{},
 		// FIXME: do we need to store this in the container?
 		SysInitPath: sysInitPath,
