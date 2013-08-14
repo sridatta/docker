@@ -820,7 +820,9 @@ func (container *Container) monitor() {
 	}
 	utils.Debugf("Process finished")
 	if container.runtime != nil && container.runtime.srv != nil {
-		container.runtime.srv.LogEvent("die", container.ShortID(), container.runtime.repositories.ImageName(container.Image))
+    for _, image := range container.Images {
+      container.runtime.srv.LogEvent("die", container.ShortID(), container.runtime.repositories.ImageName(image))
+    }
 	}
 	exitCode := -1
 	if container.cmd != nil {

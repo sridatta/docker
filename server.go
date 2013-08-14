@@ -76,7 +76,6 @@ func (srv *Server) ContainerKill(name string) error {
 		if err := container.Kill(); err != nil {
 			return fmt.Errorf("Error killing container %s: %s", name, err)
 		}
-		srv.LogEvent("kill", container.ShortID(), srv.runtime.repositories.ImageName(container.Image))
 	} else {
 		return fmt.Errorf("No such container: %s", name)
 	}
@@ -95,7 +94,6 @@ func (srv *Server) ContainerExport(name string, out io.Writer) error {
 		if _, err := io.Copy(out, data); err != nil {
 			return err
 		}
-		srv.LogEvent("export", container.ShortID(), srv.runtime.repositories.ImageName(container.Image))
 		return nil
 	}
 	return fmt.Errorf("No such container: %s", name)
@@ -841,7 +839,6 @@ func (srv *Server) ContainerCreate(config *Config) (string, error) {
 		}
 		return "", err
 	}
-	srv.LogEvent("create", container.ShortID(), srv.runtime.repositories.ImageName(container.Image))
 	return container.ShortID(), nil
 }
 
@@ -850,7 +847,6 @@ func (srv *Server) ContainerRestart(name string, t int) error {
 		if err := container.Restart(t); err != nil {
 			return fmt.Errorf("Error restarting container %s: %s", name, err)
 		}
-		srv.LogEvent("restart", container.ShortID(), srv.runtime.repositories.ImageName(container.Image))
 	} else {
 		return fmt.Errorf("No such container: %s", name)
 	}
@@ -870,7 +866,6 @@ func (srv *Server) ContainerDestroy(name string, removeVolume bool) error {
 		if err := srv.runtime.Destroy(container); err != nil {
 			return fmt.Errorf("Error destroying container %s: %s", name, err)
 		}
-		srv.LogEvent("destroy", container.ShortID(), srv.runtime.repositories.ImageName(container.Image))
 
 		if removeVolume {
 			// Retrieve all volumes from all remaining containers
@@ -1057,7 +1052,6 @@ func (srv *Server) ContainerStart(name string, hostConfig *HostConfig) error {
 		if err := container.Start(hostConfig); err != nil {
 			return fmt.Errorf("Error starting container %s: %s", name, err)
 		}
-		srv.LogEvent("start", container.ShortID(), srv.runtime.repositories.ImageName(container.Image))
 	} else {
 		return fmt.Errorf("No such container: %s", name)
 	}
@@ -1069,7 +1063,6 @@ func (srv *Server) ContainerStop(name string, t int) error {
 		if err := container.Stop(t); err != nil {
 			return fmt.Errorf("Error stopping container %s: %s", name, err)
 		}
-		srv.LogEvent("stop", container.ShortID(), srv.runtime.repositories.ImageName(container.Image))
 	} else {
 		return fmt.Errorf("No such container: %s", name)
 	}
