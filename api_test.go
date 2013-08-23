@@ -97,8 +97,8 @@ func TestGetEvents(t *testing.T) {
 		listeners: make(map[string]chan utils.JSONMessage),
 	}
 
-	srv.LogEvent("fakeaction", "fakeid")
-	srv.LogEvent("fakeaction2", "fakeid")
+	srv.LogEvent("fakeaction", "fakeid", "TestGetEvents")
+	srv.LogEvent("fakeaction2", "fakeid", "TestGetEvents")
 
 	req, err := http.NewRequest("GET", "/events?since=1", nil)
 	if err != nil {
@@ -461,7 +461,7 @@ func TestGetContainersTop(t *testing.T) {
 
 	container, err := builder.Create(
 		&Config{
-			Images:    []{GetTestImage(runtime).ID},
+			Images:    []string{GetTestImage(runtime).ID},
 			Cmd:       []string{"/bin/sh", "-c", "cat"},
 			OpenStdin: true,
 		},
@@ -1189,7 +1189,7 @@ func TestPostContainersCopy(t *testing.T) {
 	// Create a container and remove a file
 	container, err := builder.Create(
 		&Config{
-			Image: GetTestImage(runtime).ID,
+			Images:[]string{GetTestImage(runtime).ID},
 			Cmd:   []string{"touch", "/test.txt"},
 		},
 	)

@@ -1008,7 +1008,7 @@ func TestEntrypointNoCmd(t *testing.T) {
 	defer nuke(runtime)
 	container, err := NewBuilder(runtime).Create(
 		&Config{
-			Image:      GetTestImage(runtime).ID,
+			Images:     []string{GetTestImage(runtime).ID},
 			Entrypoint: []string{"/bin/echo", "foobar"},
 		},
 	)
@@ -1246,7 +1246,7 @@ func TestRestartWithVolumes(t *testing.T) {
 	defer nuke(runtime)
 
 	container, err := NewBuilder(runtime).Create(&Config{
-		Image:   GetTestImage(runtime).ID,
+		Images:   []string{GetTestImage(runtime).ID},
 		Cmd:     []string{"echo", "-n", "foobar"},
 		Volumes: map[string]struct{}{"/test": {}},
 	},
@@ -1289,7 +1289,7 @@ func TestVolumesFromWithVolumes(t *testing.T) {
 	defer nuke(runtime)
 
 	container, err := NewBuilder(runtime).Create(&Config{
-		Image:   GetTestImage(runtime).ID,
+		Images:  []string{GetTestImage(runtime).ID},
 		Cmd:     []string{"sh", "-c", "echo -n bar > /test/foo"},
 		Volumes: map[string]struct{}{"/test": {}},
 	},
@@ -1317,7 +1317,7 @@ func TestVolumesFromWithVolumes(t *testing.T) {
 
 	container2, err := NewBuilder(runtime).Create(
 		&Config{
-			Image:       GetTestImage(runtime).ID,
+			Images:      []string{GetTestImage(runtime).ID},
 			Cmd:         []string{"cat", "/test/foo"},
 			VolumesFrom: container.ID,
 			Volumes:     map[string]struct{}{"/test": {}},
