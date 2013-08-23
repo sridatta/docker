@@ -329,6 +329,67 @@ func TestCommitRun(t *testing.T) {
 	}
 }
 
+func TestMultipleImages(t *testing.T){
+	runtime := mkRuntime(t)
+	defer nuke(runtime)
+
+	container1, hostConfig, _ := mkContainer(runtime, []string{"_", "/bin/sh", "-c", "touch FOO"}, t)
+	defer runtime.Destroy(container1)
+
+	if container1.State.Running {
+		t.Errorf("Container shouldn't be running")
+	}
+	if err := container1.Run(); err != nil {
+		t.Fatal(err)
+	}
+	if container1.State.Running {
+		t.Errorf("Container shouldn't be running")
+	}
+
+	rwTar, err := container1.ExportRw()
+	if err != nil {
+		t.Error(err)
+	}
+	img, err := runtime.graph.Create(rwTar, container1, "unit test commited image", "", nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+
+	container2, hostConfig, _ := mkContainer(runtime, []string{"_", "/bin/sh", "-c", "touch BAR"}, t)
+	defer runtime.Destroy(container2)
+
+	if container2.State.Running {
+		t.Errorf("Container shouldn't be running")
+	}
+	if err := container2.Run(); err != nil {
+		t.Fatal(err)
+	}
+	if container2.State.Running {
+		t.Errorf("Container shouldn't be running")
+	}
+
+	rwTar2, err := container2.ExportRw()
+	if err != nil {
+		t.Error(err)
+	}
+	img2, err := runtime.graph.Create(rwTar2, container2, "unit test commited image", "", nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	container, err := NewBuilder(runtime).Create(&Config{
+		Images: []string{img.ID, img2.ID},
+		Cmd:   []string{"/bin/sh", "-c", "([ -f FOO ] && [-f BAR]) || exit 1"},
+	},
+	)
+
+  if err != nil || container.State.ExitCode != 0 {
+		t.Fatalf("Container should contain files from both parent images")
+  }
+
+}
+
 func TestStart(t *testing.T) {
 	runtime := mkRuntime(t)
 	defer nuke(runtime)
