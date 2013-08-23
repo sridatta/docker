@@ -193,7 +193,7 @@ func TestRunWithTooLowMemoryLimit(t *testing.T) {
 	// Try to create a container with a memory limit of 1 byte less than the minimum allowed limit.
 	_, err = srv.ContainerCreate(
 		&Config{
-			Image:     GetTestImage(runtime).ID,
+			Images:     []string{GetTestImage(runtime).ID},
 			Memory:    524287,
 			CpuShares: 1000,
 			Cmd:       []string{"/bin/cat"},

@@ -1031,13 +1031,11 @@ func (container *Container) Mount() error {
 		if err != nil {
 			return err
 		}
-		log.Printf("Layers are %v\n", imageLayers)
 		for _, layer := range imageLayers {
 			layerSet.Add(layer)
 		}
 	}
 
-	log.Printf("Layerset elements are %v\n", layerSet.GetElements())
 	if err := MountAUFS(layerSet.GetElements(), container.rwPath(), container.RootfsPath()); err != nil {
 		return err
 	}

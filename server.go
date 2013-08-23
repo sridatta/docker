@@ -299,7 +299,7 @@ func (srv *Server) ImageHistory(name string) ([]APIHistory, error) {
 	}
 
 	outs := []APIHistory{} //produce [] when empty instead of 'null'
-	err = image.WalkHistory(func(img *Image) error {
+	err = image.WalkHistoryUnique(func(img *Image) error {
 		var out APIHistory
 		out.ID = srv.runtime.repositories.ImageName(img.ShortID())
 		out.Created = img.Created.Unix()

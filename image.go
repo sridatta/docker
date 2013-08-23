@@ -246,7 +246,7 @@ func (img *Image) History() ([]*Image, error) {
 func (img *Image) Layers() ([]string, error) {
 	var list []string
 	var e error
-	if err := img.WalkHistory(
+	if err := img.WalkHistoryUnique(
 		func(img *Image) (err error) {
 			if layer, err := img.Layer(); err != nil {
 				e = err
@@ -290,6 +290,22 @@ func (img *Image) WalkHistory(handler func(*Image) error) (err error) {
 		frontier = append(frontier, parents...)
 	}
 	return nil
+}
+
+func (img *Image) WalkHistoryUnique(handler func(*Image) error) (err error) {
+  set := utils.NewStringSet()
+  img.WalkHistory(
+    func(currImg *Image) (err error) {
+      unseen := set.Add(currImg.ID)
+      if unseen {
+        if err := handler(currImg); err != nil {
+          return err
+        }
+      }
+      return nil
+    },
+  )
+  return nil
 }
 
 func (img *Image) GetParents() ([]*Image, error) {

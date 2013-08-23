@@ -145,7 +145,7 @@ func TestRuntimeCreate(t *testing.T) {
 	builder := NewBuilder(runtime)
 
 	container, err := builder.Create(&Config{
-		Image: GetTestImage(runtime).ID,
+    Images:    []string{GetTestImage(runtime).ID},
 		Cmd:   []string{"ls", "-al"},
 	},
 	)
@@ -187,7 +187,7 @@ func TestRuntimeCreate(t *testing.T) {
 	// Make sure crete with bad parameters returns an error
 	_, err = builder.Create(
 		&Config{
-			Image: GetTestImage(runtime).ID,
+			Images: []string{GetTestImage(runtime).ID},
 		},
 	)
 	if err == nil {
@@ -196,7 +196,7 @@ func TestRuntimeCreate(t *testing.T) {
 
 	_, err = builder.Create(
 		&Config{
-			Image: GetTestImage(runtime).ID,
+			Images: []string{GetTestImage(runtime).ID},
 			Cmd:   []string{},
 		},
 	)
@@ -209,7 +209,7 @@ func TestDestroy(t *testing.T) {
 	runtime := mkRuntime(t)
 	defer nuke(runtime)
 	container, err := NewBuilder(runtime).Create(&Config{
-		Image: GetTestImage(runtime).ID,
+		Images: []string{GetTestImage(runtime).ID},
 		Cmd:   []string{"ls", "-al"},
 	},
 	)
@@ -295,7 +295,7 @@ func startEchoServerContainer(t *testing.T, proto string) (*Runtime, *Container,
 		}
 		t.Log("Trying port", strPort)
 		container, err = NewBuilder(runtime).Create(&Config{
-			Image:     GetTestImage(runtime).ID,
+      Images:    []string{GetTestImage(runtime).ID},
 			Cmd:       []string{"sh", "-c", cmd},
 			PortSpecs: []string{fmt.Sprintf("%s/%s", strPort, proto)},
 		})

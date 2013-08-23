@@ -98,9 +98,7 @@ func mkContainer(r *Runtime, args []string, t *testing.T) (*Container, *HostConf
 	if err != nil {
 		return nil, nil, err
 	}
-	if config.Image == "_" {
-		config.Image = GetTestImage(r).ID
-	}
+	config.Images =[]string{ GetTestImage(r).ID}
 	c, err := NewBuilder(r).Create(config)
 	if err != nil {
 		return nil, nil, err

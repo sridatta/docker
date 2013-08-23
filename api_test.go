@@ -322,7 +322,7 @@ func TestGetContainersJSON(t *testing.T) {
 	srv := &Server{runtime: runtime}
 
 	container, err := NewBuilder(runtime).Create(&Config{
-		Image: GetTestImage(runtime).ID,
+    Images:    []string{GetTestImage(runtime).ID},
 		Cmd:   []string{"echo", "test"},
 	})
 	if err != nil {
@@ -362,7 +362,7 @@ func TestGetContainersExport(t *testing.T) {
 	// Create a container and remove a file
 	container, err := builder.Create(
 		&Config{
-			Image: GetTestImage(runtime).ID,
+      Images:    []string{GetTestImage(runtime).ID},
 			Cmd:   []string{"touch", "/test"},
 		},
 	)
@@ -414,7 +414,7 @@ func TestGetContainersChanges(t *testing.T) {
 	// Create a container and remove a file
 	container, err := builder.Create(
 		&Config{
-			Image: GetTestImage(runtime).ID,
+      Images:    []string{GetTestImage(runtime).ID},
 			Cmd:   []string{"/bin/rm", "/etc/passwd"},
 		},
 	)
@@ -461,7 +461,7 @@ func TestGetContainersTop(t *testing.T) {
 
 	container, err := builder.Create(
 		&Config{
-			Image:     GetTestImage(runtime).ID,
+			Images:    []{GetTestImage(runtime).ID},
 			Cmd:       []string{"/bin/sh", "-c", "cat"},
 			OpenStdin: true,
 		},
@@ -545,7 +545,7 @@ func TestGetContainersByName(t *testing.T) {
 	// Create a container and remove a file
 	container, err := builder.Create(
 		&Config{
-			Image: GetTestImage(runtime).ID,
+      Images:    []string{GetTestImage(runtime).ID},
 			Cmd:   []string{"echo", "test"},
 		},
 	)
@@ -578,7 +578,7 @@ func TestPostCommit(t *testing.T) {
 	// Create a container and remove a file
 	container, err := builder.Create(
 		&Config{
-			Image: GetTestImage(runtime).ID,
+      Images:    []string{GetTestImage(runtime).ID},
 			Cmd:   []string{"touch", "/test"},
 		},
 	)
@@ -620,7 +620,7 @@ func TestPostContainersCreate(t *testing.T) {
 	srv := &Server{runtime: runtime}
 
 	configJSON, err := json.Marshal(&Config{
-		Image:  GetTestImage(runtime).ID,
+    Images:    []string{GetTestImage(runtime).ID},
 		Memory: 33554432,
 		Cmd:    []string{"touch", "/test"},
 	})
@@ -672,7 +672,7 @@ func TestPostContainersKill(t *testing.T) {
 
 	container, err := NewBuilder(runtime).Create(
 		&Config{
-			Image:     GetTestImage(runtime).ID,
+			Images:    []string{GetTestImage(runtime).ID},
 			Cmd:       []string{"/bin/cat"},
 			OpenStdin: true,
 		},
@@ -714,7 +714,7 @@ func TestPostContainersRestart(t *testing.T) {
 
 	container, err := NewBuilder(runtime).Create(
 		&Config{
-			Image:     GetTestImage(runtime).ID,
+			Images:    []string{GetTestImage(runtime).ID},
 			Cmd:       []string{"/bin/cat"},
 			OpenStdin: true,
 		},
@@ -768,7 +768,7 @@ func TestPostContainersStart(t *testing.T) {
 
 	container, err := NewBuilder(runtime).Create(
 		&Config{
-			Image:     GetTestImage(runtime).ID,
+			Images:    []string{GetTestImage(runtime).ID},
 			Cmd:       []string{"/bin/cat"},
 			OpenStdin: true,
 		},
@@ -818,7 +818,7 @@ func TestPostContainersStop(t *testing.T) {
 
 	container, err := NewBuilder(runtime).Create(
 		&Config{
-			Image:     GetTestImage(runtime).ID,
+			Images:    []string{GetTestImage(runtime).ID},
 			Cmd:       []string{"/bin/cat"},
 			OpenStdin: true,
 		},
@@ -865,7 +865,7 @@ func TestPostContainersWait(t *testing.T) {
 
 	container, err := NewBuilder(runtime).Create(
 		&Config{
-			Image:     GetTestImage(runtime).ID,
+			Images:    []string{GetTestImage(runtime).ID},
 			Cmd:       []string{"/bin/sleep", "1"},
 			OpenStdin: true,
 		},
@@ -907,7 +907,7 @@ func TestPostContainersAttach(t *testing.T) {
 
 	container, err := NewBuilder(runtime).Create(
 		&Config{
-			Image:     GetTestImage(runtime).ID,
+			Images:    []string{GetTestImage(runtime).ID},
 			Cmd:       []string{"/bin/cat"},
 			OpenStdin: true,
 		},
@@ -998,7 +998,7 @@ func TestDeleteContainers(t *testing.T) {
 	srv := &Server{runtime: runtime}
 
 	container, err := NewBuilder(runtime).Create(&Config{
-		Image: GetTestImage(runtime).ID,
+    Images:    []string{GetTestImage(runtime).ID},
 		Cmd:   []string{"touch", "/test"},
 	})
 	if err != nil {
